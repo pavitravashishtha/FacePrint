@@ -60,5 +60,41 @@
     "merkle_root": "990a2022e17a8a3b62e2b0b50b87fab95b5c3643b6604e33031aebb68be24c6f",
     "nonce": 50638,
     "hash": "00000c4884917df3d1de3bc7bc2313f4bf80568382732496bee360c2bf125426"
+  },
+  {
+    "index": 3,
+    "timestamp": 1788801164.2354686,
+    "data": {
+      "source_url": "https://images.herzindagi.info/image/2022/Jul/who-is-divya-ajith-first-female-officer-to-lead-a-contingent-on-army-day-parade.jpg",
+      "platform": "images.herzindagi.info",
+      "title": "Divya Ajith Biography \u0938\u094d\u0935\u0949\u0930\u094d\u0921 \u0911\u092b \u0911\u0928\u0930 \u0915\u094d\u092f\u093e \u0939\u094b\u0924\u093e \u0939\u0948 Divya Ajith Kaun Hai",
+      "matched_image_url": "https://avatars.mds.yandex.net/i?id=34ee9f9ed699bfd86d8c935521c5eee9fed23a52-5675359-images-thumbs&n=13&w=296&h=180",
+      "probe_image_hash": "5f1044ea31589598b0a47de9f09b9e5388f7dbbe10be0ef865ec363c169ad9ea",
+      "similarity_score": 0.5,
+      "timestamp_iso": "2026-09-07T17:12:44.235468+00:00",
+      "canonical_record_hash": "3e0a499365c8e3db4cf78147db9e4c6b4a26073e363b605f4cd0dc592f3870dd"
+    },
+    "previous_hash": "00000c4884917df3d1de3bc7bc2313f4bf80568382732496bee360c2bf125426",
+    "merkle_root": "3f6bfdd92d9b5ac66afc1822ee31a9cdcdb038342b4810d11dd221c977a906fb",
+    "nonce": 32785,
+    "hash": "0000a8d48ce46f254f32b3d024c0124a3efee273f6b9edaf8bfe194aa0d96f9a"
+  },
+  {
+    "index": 4,
+    "timestamp": 1788801239.0208564,
+    "data": {
+      "source_url": "https://turkhokey.gov.tr/assets/images/sporcu/7ea0590749e846aaac8e2013f8e54970.JPG",
+      "platform": "turkhokey.gov.tr",
+      "title": "T\u00fcrkiye Hokey Federasyonu GAYE \u00c7AKMAK",
+      "matched_image_url": "https://avatars.mds.yandex.net/i?id=2408411e3a6a5147e901425a961b52cc88041332-4549815-images-thumbs&n=13&w=296&h=180",
+      "probe_image_hash": "de79a01155aaac7da62d2ad28835259ad76a3bf7479db8c0f2785922ce3acb9d",
+      "similarity_score": 0.5,
+      "timestamp_iso": "2026-09-07T17:13:59.020856+00:00",
+      "canonical_record_hash": "e3c209150993e41c7a92d4331b902520874daff79b65de840c185cc31aa94ebd"
+    },
+    "previous_hash": "0000a8d48ce46f254f32b3d024c0124a3efee273f6b9edaf8bfe194aa0d96f9a",
+    "merkle_root": "cdff7c9a11a69555ab77431c992eab6164bb195296688007aba251bc704a805b",
+    "nonce": 34512,
+    "hash": "00001d0d698dda0af37a6c8c6b58bc043c2cc052120dec446073e336f5d4ff3d"
   }
 ]
