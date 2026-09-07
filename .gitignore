@@ -1,0 +1,9 @@
+# Environment variables and API keys
+.env
+
+# Python bytecode & cache
+__pycache__/
+*.pyc
+
+# Local blockchain storage (optional - keep or ignore based on preference)
+# chain_data.json
