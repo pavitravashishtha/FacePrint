@@ -135,6 +135,13 @@ Simulate a malicious alteration of on-chain records and demonstrate instant cryp
 python main.py --tamper-demo
 ```
 
+### 7. Launch Interactive Visual Web Dashboard
+Launch the zero-dependency, modern dark-mode browser dashboard:
+```bash
+python app.py
+```
+*(Opens `http://127.0.0.1:5000` automatically in your browser with drag-and-drop face scanning, live search match cards, and visual blockchain/Merkle tree explorer).*
+
 ---
 
 ## ⛓️ Which Blockchain is Used?
