@@ -1,178 +1,64 @@
 [
   {
     "index": 0,
-    "timestamp": 1788798410.2428532,
+    "timestamp": 1788800208.6431177,
     "data": {
       "genesis": true,
       "message": "Genesis Block - Face Blockchain Audit Ledger"
     },
     "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "nonce": 80718,
-    "hash": "0000db7aec4279567ac440996d117e3862d5a35ba628f21a2c6cdd649f95c099"
+    "merkle_root": "4e329d4d2bd7c6ea579bddb958e30b7e590e687dae1b6881f34cd27d6d504eac",
+    "nonce": 59945,
+    "hash": "000089d2f74ec4b19f1355dc48bb0dd52308978ab8f8667536aa04523310d7d7"
   },
   {
     "index": 1,
-    "timestamp": 1788798410.8689027,
+    "timestamp": 1788800258.1217084,
     "data": {
-      "source_url": "https://instagram.com/p/sample123",
-      "probe_image_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "similarity_score": 0.945,
-      "timestamp": 1788798410.8689027
+      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
+      "platform": "em-content.zobj.net",
+      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
+      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
+      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
+      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
+      "similarity_score": 0.5,
+      "timestamp_iso": "2026-09-07T16:57:38.121708+00:00",
+      "search_provider": "yandex",
+      "canonical_record_hash": "303fec43b0355d62f1f7d5958ffee7c426dd062b8eb8cb29bcbe9d46d936fdba"
     },
-    "previous_hash": "0000db7aec4279567ac440996d117e3862d5a35ba628f21a2c6cdd649f95c099",
-    "nonce": 65530,
-    "hash": "0000439c4e6aba4442dc541d910474b07cbd1d4d9bb708cb885a4a668500af25"
+    "previous_hash": "000089d2f74ec4b19f1355dc48bb0dd52308978ab8f8667536aa04523310d7d7",
+    "merkle_root": "88fc616b47a0d572b52c23d3cca09412ad47b0a4c58e6cb83e060fcdad700a5f",
+    "nonce": 122449,
+    "hash": "000060a5aab829e98f23c38d02a9881f58b1cff7a97239d279fc255b0c3f1dd8"
   },
   {
     "index": 2,
-    "timestamp": 1788798530.2151198,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:28:50.208781+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "185cc6697a913b0a0c851ff542a5ac1e94ed31c297464fb18ec6d3a02b4ac6e0"
-    },
-    "previous_hash": "0000439c4e6aba4442dc541d910474b07cbd1d4d9bb708cb885a4a668500af25",
-    "nonce": 6829,
-    "hash": "00005da4ca514a171cf183bf4126368c0ae99a96dfbf2ec25a7bd50b9b8c3688"
-  },
-  {
-    "index": 3,
-    "timestamp": 1788798552.219339,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:29:12.219339+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "88406f759e51b62ce0cb12f5c58ed5ba27867b20a19069746b07b3b5cab7dab1"
-    },
-    "previous_hash": "00005da4ca514a171cf183bf4126368c0ae99a96dfbf2ec25a7bd50b9b8c3688",
-    "nonce": 25531,
-    "hash": "0000f6066d2f282783c06b56e1013a538012a7a59847e73a8c7722fa7b359b3a"
-  },
-  {
-    "index": 4,
-    "timestamp": 1788798574.902624,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:29:34.902624+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "5cd71defe5e4baef740d692ec5772eadc080e60dc7d682c38f788f790f57fdd4"
-    },
-    "previous_hash": "0000f6066d2f282783c06b56e1013a538012a7a59847e73a8c7722fa7b359b3a",
-    "nonce": 81298,
-    "hash": "000048d24c29a998209f4cce28e62932d2b4282d23fbfd4d1ea133585e392492"
-  },
-  {
-    "index": 5,
-    "timestamp": 1788798659.383105,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:30:59.383104+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "02da97e1d77f057b39c849d2274833e84fe8bef1583b62f64e461d45d08f78f1"
-    },
-    "previous_hash": "000048d24c29a998209f4cce28e62932d2b4282d23fbfd4d1ea133585e392492",
-    "nonce": 63042,
-    "hash": "0000d8000f9705ccb1f41053db17526d5870ab9b15502fa15fc93629978802fe"
-  },
-  {
-    "index": 6,
-    "timestamp": 1788798678.0865629,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:31:18.086562+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "f02d0fac08fd8b4a75a41efcde97515d1f791378146ada779dc13bda95f131a3"
-    },
-    "previous_hash": "0000d8000f9705ccb1f41053db17526d5870ab9b15502fa15fc93629978802fe",
-    "nonce": 69585,
-    "hash": "000077b20298d2a39c9d24e3d2112567d7d4f742b909046be75fa86038d99a17"
-  },
-  {
-    "index": 7,
-    "timestamp": 1788798953.127603,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:35:53.125096+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "c48390a920b3d39e2b2f465b41bee4c562a7c8cd3ccdfccaed16ad37d444f182"
-    },
-    "previous_hash": "000077b20298d2a39c9d24e3d2112567d7d4f742b909046be75fa86038d99a17",
-    "nonce": 6662,
-    "hash": "0000c8c33e8a99f2de2ab1e551a619437ca03cdcf01a2d7a318a7f17416054bf"
-  },
-  {
-    "index": 8,
-    "timestamp": 1788799158.4414227,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:39:18.441422+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "35148f89b4b25a1914cf8a83b8b13c61a67f13f6cb65e2bbc655432ab24c4fa4"
-    },
-    "previous_hash": "0000c8c33e8a99f2de2ab1e551a619437ca03cdcf01a2d7a318a7f17416054bf",
-    "nonce": 23845,
-    "hash": "00006adae829c938b50dd5d859611e99f5ccc823f5a298d53d1ee5abf6f33197"
-  },
-  {
-    "index": 9,
-    "timestamp": 1788799281.9245083,
-    "data": {
-      "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
-      "platform": "em-content.zobj.net",
-      "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
-      "matched_image_url": "https://avatars.mds.yandex.net/i?id=456d0542f6be5edcb2b885242d7e40255b2565db-5226832-images-thumbs&n=13&w=296&h=180",
-      "candidate_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
-      "similarity_score": 0.5,
-      "timestamp_iso": "2026-09-07T16:41:21.924508+00:00",
-      "search_provider": "yandex",
-      "canonical_record_hash": "1edd9924e685e01a7d21a7a46beeb81817d79d2cfd860c63de261cb6c0e0f3d4"
-    },
-    "previous_hash": "00006adae829c938b50dd5d859611e99f5ccc823f5a298d53d1ee5abf6f33197",
-    "nonce": 65249,
-    "hash": "0000837c025037ea11c29f3c72f4a1c20d0111293fb64e3dab7314e228b9df89"
+    "timestamp": 1788800319.6880322,
+    "data": [
+      {
+        "filename": "face_alpha.jpg",
+        "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
+        "platform": "em-content.zobj.net",
+        "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
+        "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
+        "similarity_score": 0.85,
+        "timestamp_iso": "2026-09-07T16:58:15.008904+00:00",
+        "canonical_record_hash": "0f9876bc1be627ec623c173fb4b90e30f830b68f9d045a584613bca04d17b8e3"
+      },
+      {
+        "filename": "face_beta.jpg",
+        "source_url": "https://em-content.zobj.net/source/toss-face/381/new-moon-face_1f31a.png",
+        "platform": "em-content.zobj.net",
+        "title": "\ud83c\udf1a New Moon with Face Emoji: Meaning & Usage",
+        "probe_image_hash": "a6ef2434b6ad2a576b49aa1f8eba20bbbb7b04851638118643de5b45a565cbf4",
+        "similarity_score": 0.85,
+        "timestamp_iso": "2026-09-07T16:58:39.688032+00:00",
+        "canonical_record_hash": "2530d3f0c256d833681e9a73603efb984f1ed3830a97c538bab93aa74c09c548"
+      }
+    ],
+    "previous_hash": "000060a5aab829e98f23c38d02a9881f58b1cff7a97239d279fc255b0c3f1dd8",
+    "merkle_root": "990a2022e17a8a3b62e2b0b50b87fab95b5c3643b6604e33031aebb68be24c6f",
+    "nonce": 50638,
+    "hash": "00000c4884917df3d1de3bc7bc2313f4bf80568382732496bee360c2bf125426"
   }
 ]

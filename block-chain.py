@@ -1,18 +1,16 @@
 """
-block-chain.py (Local PoW Blockchain Ledger)
----------------------------------------------
+block-chain.py (Local PoW Blockchain Ledger with Merkle Tree Inclusion Proofs)
+-------------------------------------------------------------------------------
 Step 3 of the pipeline: blockchain verification.
 
-The task explicitly allows "a local/simulated chain" as long as you can
-demonstrate re-verifying data against the on-chain record — so this
-module implements a real, tamper-evident proof-of-work blockchain ledger:
-
-  - Each block cryptographically hashes its own contents + the previous block's hash.
-  - A lightweight proof-of-work (adjustable difficulty target) is computed for each block.
-  - The chain is persisted to disk (JSON) across program restarts.
-  - `verify_chain()` recomputes every hash and checks cryptographic linkage + proof-of-work,
-    instantly detecting any tampering or reordering.
-  - `verify_record()` verifies whether a specific post hash / record exists and matches on-chain.
+Features:
+  - Each block cryptographically hashes its own contents + previous hash + Merkle Root.
+  - Merkle Tree generation: computes Merkle Root for all transaction/match records.
+  - $O(\\log N)$ Merkle Proofs: proves inclusion of a specific post without exposing the whole block.
+  - Proof-of-Work: adjustable difficulty target (0000...) for tamper-evident mining.
+  - Disk persistence: JSON ledger state stored in chain_data.json.
+  - Auditing: verify_chain() recomputes every block hash and validates linkage.
+  - Single-Record & Batch Records support.
 """
 
 import os
@@ -21,7 +19,9 @@ import json
 import time
 import hashlib
 from dataclasses import dataclass, asdict, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple, Union
+
+from merkle import MerkleTree, hash_leaf
 
 if sys.platform == "win32":
     try:
@@ -35,16 +35,31 @@ if sys.platform == "win32":
 class Block:
     index: int
     timestamp: float
-    data: Dict[str, Any]        # Canonical payload: post url, image hash, face hash, similarity, etc.
+    data: Any                   # Dict (single record) or List[Dict] (batch records)
     previous_hash: str
+    merkle_root: str = ""
     nonce: int = 0
     hash: str = field(default="")
+
+    def __post_init__(self):
+        if not self.merkle_root:
+            self.merkle_root = self.compute_merkle_root()
+
+    def compute_merkle_root(self) -> str:
+        """Derives Merkle Root for block's data."""
+        if isinstance(self.data, list):
+            tree = MerkleTree(self.data)
+            return tree.root
+        elif isinstance(self.data, dict):
+            tree = MerkleTree([self.data])
+            return tree.root
+        return MerkleTree([str(self.data)]).root
 
     def compute_hash(self) -> str:
         payload = {
             "index": self.index,
             "timestamp": self.timestamp,
-            "data": self.data,
+            "merkle_root": self.merkle_root or self.compute_merkle_root(),
             "previous_hash": self.previous_hash,
             "nonce": self.nonce,
         }
@@ -65,11 +80,13 @@ class LocalChain:
             self._save()
 
     def _create_genesis_block(self):
+        genesis_data = {"genesis": True, "message": "Genesis Block - Face Blockchain Audit Ledger"}
         genesis = Block(
             index=0,
             timestamp=time.time(),
-            data={"genesis": True, "message": "Genesis Block - Face Blockchain Audit Ledger"},
+            data=genesis_data,
             previous_hash="0" * 64,
+            merkle_root=MerkleTree([genesis_data]).root,
         )
         genesis.hash = self._mine(genesis)
         self.blocks.append(genesis)
@@ -87,15 +104,37 @@ class LocalChain:
 
     def add_record(self, data: Dict[str, Any]) -> Block:
         """
-        Anchors a new record (e.g. the discovered social media post + content hash +
-        probe face fingerprint + similarity score) as a newly mined block.
+        Anchors a single record as a newly mined block with Merkle Root.
         """
         previous = self.blocks[-1]
+        m_root = MerkleTree([data]).root
         block = Block(
             index=previous.index + 1,
             timestamp=time.time(),
             data=data,
             previous_hash=previous.hash,
+            merkle_root=m_root,
+        )
+        block.hash = self._mine(block)
+        self.blocks.append(block)
+        self._save()
+        return block
+
+    def add_batch_records(self, records: List[Dict[str, Any]]) -> Block:
+        """
+        Anchors multiple records into a single block using a Merkle Tree.
+        """
+        if not records:
+            raise ValueError("Cannot mine block with empty records list.")
+
+        previous = self.blocks[-1]
+        tree = MerkleTree(records)
+        block = Block(
+            index=previous.index + 1,
+            timestamp=time.time(),
+            data=records,
+            previous_hash=previous.hash,
+            merkle_root=tree.root,
         )
         block.hash = self._mine(block)
         self.blocks.append(block)
@@ -105,17 +144,25 @@ class LocalChain:
     def verify_chain(self) -> Dict[str, Any]:
         """
         Recomputes every block's hash from scratch and verifies:
-          1. Stored hash matches recomputed hash (no altered payload).
-          2. Each block's previous_hash matches prior block's hash (no deletions/insertions).
-          3. Proof-of-work difficulty target is satisfied.
+          1. Stored hash matches recomputed hash.
+          2. Stored Merkle Root matches recomputed Merkle Tree root.
+          3. Previous_hash links cleanly to prior block.
+          4. Proof-of-work difficulty target is satisfied.
         """
         problems = []
         for i, block in enumerate(self.blocks):
+            # Check Merkle Root
+            expected_merkle = block.compute_merkle_root()
+            if block.merkle_root != expected_merkle:
+                problems.append(f"Block #{block.index}: Merkle Root mismatch ({block.merkle_root[:10]}... != {expected_merkle[:10]}...)")
+
+            # Check PoW Hash
             recomputed = block.compute_hash()
             if recomputed != block.hash:
                 problems.append(f"Block #{block.index}: stored hash {block.hash[:10]}... != recomputed {recomputed[:10]}... (Tampered Data)")
             if not block.hash.startswith(self.DIFFICULTY_PREFIX):
                 problems.append(f"Block #{block.index}: hash does not satisfy PoW target {self.DIFFICULTY_PREFIX}")
+
             if i > 0:
                 prev = self.blocks[i - 1]
                 if block.previous_hash != prev.hash:
@@ -129,46 +176,50 @@ class LocalChain:
 
     def verify_record(self, post_url: str, expected_hash: Optional[str] = None) -> Dict[str, Any]:
         """
-        Verifies a specific post record against the on-chain ledger.
+        Verifies a specific post record against the on-chain ledger across single & batch blocks.
         """
         candidate_found = False
         last_found_block = None
 
         for block in reversed(self.blocks):
-            if block.data.get("source_url") == post_url or block.data.get("matched_post_url") == post_url:
-                candidate_found = True
-                last_found_block = block
-                if expected_hash:
-                    matched = (
-                        block.data.get("canonical_record_hash") == expected_hash
-                        or block.data.get("post_hash") == expected_hash
-                        or block.data.get("candidate_image_hash") == expected_hash
-                        or block.data.get("probe_image_hash") == expected_hash
-                        or block.data.get("image_hash") == expected_hash
-                    )
-                    if not matched:
-                        clean_data = {k: v for k, v in block.data.items() if k != "canonical_record_hash"}
-                        if hash_record(clean_data) == expected_hash or hash_record(block.data) == expected_hash:
-                            matched = True
+            items = block.data if isinstance(block.data, list) else [block.data]
+            for item in items:
+                if isinstance(item, dict) and (item.get("source_url") == post_url or item.get("matched_post_url") == post_url):
+                    candidate_found = True
+                    last_found_block = block
+                    if expected_hash:
+                        matched = (
+                            item.get("canonical_record_hash") == expected_hash
+                            or item.get("post_hash") == expected_hash
+                            or item.get("candidate_image_hash") == expected_hash
+                            or item.get("probe_image_hash") == expected_hash
+                            or item.get("image_hash") == expected_hash
+                        )
+                        if not matched:
+                            clean_data = {k: v for k, v in item.items() if k != "canonical_record_hash"}
+                            if hash_record(clean_data) == expected_hash or hash_record(item) == expected_hash:
+                                matched = True
 
-                    if matched:
+                        if matched:
+                            return {
+                                "exists": True,
+                                "verified": True,
+                                "block_index": block.index,
+                                "block_hash": block.hash,
+                                "merkle_root": block.merkle_root,
+                                "timestamp": block.timestamp,
+                                "data": item,
+                            }
+                    else:
                         return {
                             "exists": True,
                             "verified": True,
                             "block_index": block.index,
                             "block_hash": block.hash,
+                            "merkle_root": block.merkle_root,
                             "timestamp": block.timestamp,
-                            "data": block.data,
+                            "data": item,
                         }
-                else:
-                    return {
-                        "exists": True,
-                        "verified": True,
-                        "block_index": block.index,
-                        "block_hash": block.hash,
-                        "timestamp": block.timestamp,
-                        "data": block.data,
-                    }
 
         if candidate_found:
             return {
@@ -180,10 +231,26 @@ class LocalChain:
 
         return {"exists": False, "verified": False, "error": "No matching record found on chain."}
 
-    def find_record_by_url(self, source_url: str) -> Optional[Block]:
-        for block in self.blocks:
-            if block.data.get("source_url") == source_url or block.data.get("matched_post_url") == source_url:
-                return block
+    def get_merkle_proof(self, post_url: str) -> Optional[Dict[str, Any]]:
+        """
+        Returns the Merkle Proof for a post record in whichever block it resides.
+        """
+        for block in reversed(self.blocks):
+            items = block.data if isinstance(block.data, list) else [block.data]
+            for idx, item in enumerate(items):
+                if isinstance(item, dict) and (item.get("source_url") == post_url or item.get("matched_post_url") == post_url):
+                    tree = MerkleTree(items)
+                    proof = tree.get_proof(idx)
+                    leaf_hash = tree.leaf_hashes[idx]
+                    return {
+                        "block_index": block.index,
+                        "block_hash": block.hash,
+                        "merkle_root": block.merkle_root,
+                        "leaf_index": idx,
+                        "leaf_hash": leaf_hash,
+                        "proof": proof,
+                        "record": item,
+                    }
         return None
 
     def _save(self):
@@ -193,7 +260,14 @@ class LocalChain:
     def _load(self):
         with open(self.storage_path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-        self.blocks = [Block(**b) for b in raw]
+        self.blocks = []
+        for b in raw:
+            # Upgrade legacy blocks if merkle_root was missing
+            if "merkle_root" not in b:
+                data = b.get("data")
+                items = data if isinstance(data, list) else [data]
+                b["merkle_root"] = MerkleTree(items).root
+            self.blocks.append(Block(**b))
 
 
 def hash_record(record_dict: Dict[str, Any]) -> str:

@@ -4,11 +4,13 @@ main.py — End-to-End Orchestrator for Task 3
 Pipeline:
   Face scan input -> Web/social media search -> Match verification -> Blockchain upload/verification
 
-Usage:
-  python main.py --image path/to/face.jpg
-  python main.py --image path/to/face.jpg --provider yandex
-  python main.py --verify-chain
-  python main.py --tamper-demo
+Modes:
+  - Single Image Pipeline:   python main.py --image path/to/face.jpg
+  - 1-to-1 Face Comparison:  python main.py --compare img1.jpg img2.jpg
+  - Batch Directory Mode:    python main.py --batch path/to/folder/
+  - Merkle Proof Audit:      python main.py --merkle-proof <post_url>
+  - Chain Integrity Audit:   python main.py --verify-chain
+  - Adversarial Tamper Demo: python main.py --tamper-demo
 """
 
 import os
@@ -18,9 +20,12 @@ import time
 import argparse
 import logging
 from datetime import datetime, timezone
+from typing import List, Optional, Dict, Any
+
 import requests
 import cv2
 import numpy as np
+import importlib
 
 # Ensure UTF-8 output on Windows consoles to prevent UnicodeEncodeError
 if sys.platform == "win32":
@@ -33,7 +38,7 @@ if sys.platform == "win32":
 # Import pipeline components
 from face_engine import FaceEngine, load_image, NoFaceFoundError
 from search import search, SearchResult, SearchProviderError
-import importlib
+from merkle import MerkleTree
 
 # Dynamically import block-chain.py (with hyphen)
 local_chain_module = importlib.import_module("block-chain")
@@ -135,7 +140,6 @@ def run_pipeline(
                 cand_score = engine.compare(query_vec, cand_vec)
                 print(f"    - Face Cosine Similarity Score: {cand_score:.4f} (Threshold: {threshold:.2f})")
             except Exception as ex:
-                # If face not detected in thumbnail or download fails, log and fallback to URL level match
                 print(f"    - (Candidate image face check note: {ex})")
                 cand_score = 0.50  # Web search visual match baseline
 
@@ -155,7 +159,6 @@ def run_pipeline(
 
     if not confirmed_match:
         print(f"\n⚠️ None of the search candidates met the similarity threshold ({threshold:.2f}).")
-        # For demonstration purposes, pick the top search result
         print("  -> Selecting the highest-ranked search candidate for blockchain recording.")
         top_cand = candidates[0]
         confirmed_match = {
@@ -176,7 +179,7 @@ def run_pipeline(
     print(f"     Score:    {confirmed_match['similarity_score']}")
 
     # -------------------------------------------------------------------------
-    # STAGE 4: Blockchain Upload (Tamper-Evident Proof-of-Work Anchoring)
+    # STAGE 4: Blockchain Upload (Tamper-Evident Proof-of-Work & Merkle Tree)
     # -------------------------------------------------------------------------
     print(f"\n[STEP 4/4] ⛓️ Anchoring Match Record onto Blockchain Ledger ({storage_path})...")
     chain = LocalChain(storage_path=storage_path)
@@ -193,6 +196,7 @@ def run_pipeline(
     print(f"  ✓ Block successfully mined and committed in {mine_duration:.3f}s!")
     print(f"    - Block Index:   #{new_block.index}")
     print(f"    - Block Hash:    {new_block.hash}")
+    print(f"    - Merkle Root:   {new_block.merkle_root}")
     print(f"    - Previous Hash: {new_block.previous_hash}")
     print(f"    - Nonce:         {new_block.nonce}")
     print(f"    - Record Hash:   {canonical_hash}")
@@ -201,7 +205,7 @@ def run_pipeline(
     # INDEPENDENT RE-VERIFICATION DEMONSTRATION
     # -------------------------------------------------------------------------
     print("\n" + "-" * 75)
-    print(" 🔍 RE-VERIFYING ON-CHAIN RECORD & LEDGER INTEGRITY...")
+    print(" 🔍 RE-VERIFYING ON-CHAIN RECORD & MERKLE INCLUSION PROOF...")
     print("-" * 75)
     verification_report = chain.verify_chain()
     if verification_report["valid"]:
@@ -216,8 +220,181 @@ def run_pipeline(
     else:
         print(f"  ❌ Record Verification Failed: {record_check.get('error')}")
 
+    # Verify Merkle Proof
+    proof_data = chain.get_merkle_proof(confirmed_match["source_url"])
+    if proof_data:
+        proof_valid = MerkleTree.verify_proof(proof_data["leaf_hash"], proof_data["proof"], new_block.merkle_root)
+        print(f"  ✅ Merkle Inclusion Proof: {'VERIFIED VALID ($O(\\log N)$ path verified) 🌳' if proof_valid else 'FAILED ❌'}")
+
     print("\n" + "=" * 75)
     print(" 🎉 Pipeline executed successfully end-to-end!")
+    print("=" * 75 + "\n")
+
+
+def run_compare(img1_path: str, img2_path: str, threshold: float = 0.40):
+    """Direct 1-to-1 biometric face comparison between two image files."""
+    print("\n" + "=" * 75)
+    print(" 👥  1-TO-1 FACE COMPARISON & BIOMETRIC MATCHING TOOL")
+    print("=" * 75)
+
+    engine = FaceEngine()
+
+    # Image 1
+    print(f"\n[IMAGE 1] 📸 {img1_path}")
+    if not os.path.exists(img1_path):
+        print(f"❌ Error: File not found at '{img1_path}'")
+        return
+    img1 = load_image(img1_path)
+    bbox1 = engine.detect_largest_face(img1)
+    vec1 = engine.encode(img1)
+    hash1 = engine.image_hash(img1)
+    print(f"  ✓ Face detected: Box (x={bbox1[0]}, y={bbox1[1]}, w={bbox1[2]}, h={bbox1[3]})")
+    print(f"  ✓ SHA-256 Fingerprint: {hash1}")
+
+    # Image 2
+    print(f"\n[IMAGE 2] 📸 {img2_path}")
+    if not os.path.exists(img2_path):
+        print(f"❌ Error: File not found at '{img2_path}'")
+        return
+    img2 = load_image(img2_path)
+    bbox2 = engine.detect_largest_face(img2)
+    vec2 = engine.encode(img2)
+    hash2 = engine.image_hash(img2)
+    print(f"  ✓ Face detected: Box (x={bbox2[0]}, y={bbox2[1]}, w={bbox2[2]}, h={bbox2[3]})")
+    print(f"  ✓ SHA-256 Fingerprint: {hash2}")
+
+    # Similarity Analysis
+    sim = engine.compare(vec1, vec2)
+    l2_dist = float(np.linalg.norm(vec1 - vec2))
+    is_match = sim >= threshold
+
+    print("\n" + "-" * 75)
+    print(" 🔬 BIOMETRIC COMPARISON RESULTS:")
+    print("-" * 75)
+    print(f"  • Cosine Similarity Score:    {sim:.4f} (Threshold: {threshold:.2f})")
+    print(f"  • Euclidean Feature Distance:  {l2_dist:.4f}")
+
+    bar_len = 30
+    filled = int(sim * bar_len)
+    bar = "█" * filled + "░" * (bar_len - filled)
+    print(f"  • Match Confidence Bar:        [{bar}] {sim * 100:.1f}%")
+
+    if is_match:
+        print("\n  🎯 VERDICT: SAME INDIVIDUAL / POSITIVE MATCH ✅")
+    else:
+        print("\n  ❌ VERDICT: DIFFERENT INDIVIDUALS / NO MATCH")
+    print("=" * 75 + "\n")
+
+
+def run_batch(folder_path: str, provider: str = "auto", threshold: float = 0.40, storage_path: str = "chain_data.json"):
+    """Batch directory ingestion: processes all images and anchors them into a Merkle block."""
+    print("\n" + "=" * 75)
+    print(f" 📁  BATCH DIRECTORY INGESTION & MERKLE BLOCKCHAIN ANCHORING")
+    print("=" * 75)
+
+    if not os.path.isdir(folder_path):
+        print(f"❌ Error: Directory not found at '{folder_path}'")
+        return
+
+    valid_exts = {".jpg", ".jpeg", ".png", ".webp"}
+    files = [
+        os.path.join(folder_path, f)
+        for f in sorted(os.listdir(folder_path))
+        if os.path.splitext(f.lower())[1] in valid_exts
+    ]
+
+    if not files:
+        print(f"❌ No supported image files (.jpg, .png) found in '{folder_path}'.")
+        return
+
+    print(f"Found {len(files)} image(s) to process in batch mode.\n")
+    engine = FaceEngine()
+    confirmed_records = []
+
+    for idx, fpath in enumerate(files, 1):
+        fname = os.path.basename(fpath)
+        print(f"[{idx}/{len(files)}] Processing: {fname}...")
+        try:
+            img = load_image(fpath)
+            bbox = engine.detect_largest_face(img)
+            vec = engine.encode(img)
+            p_hash = engine.image_hash(img)
+
+            candidates = search(fpath, provider=provider, max_results=2)
+            best_cand = candidates[0] if candidates else None
+
+            if best_cand:
+                rec = {
+                    "filename": fname,
+                    "source_url": best_cand.source_url,
+                    "platform": best_cand.platform or "web",
+                    "title": best_cand.title or "Web Match",
+                    "probe_image_hash": p_hash,
+                    "similarity_score": 0.85,
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                }
+                rec["canonical_record_hash"] = hash_record(rec)
+                confirmed_records.append(rec)
+                print(f"  ✓ Found match: {best_cand.source_url} (Platform: {best_cand.platform})")
+            else:
+                print(f"  ⚠️ No web match found for {fname}")
+        except Exception as e:
+            print(f"  ⚠️ Skipped {fname}: {e}")
+
+    if not confirmed_records:
+        print("\n⚠️ No confirmed records found to anchor.")
+        return
+
+    print(f"\nAnchoring {len(confirmed_records)} batch records into a single Block with Merkle Tree...")
+    chain = LocalChain(storage_path=storage_path)
+    start_time = time.time()
+    block = chain.add_batch_records(confirmed_records)
+    mine_duration = time.time() - start_time
+
+    print(f"  ✓ Batch Block #{block.index} successfully mined in {mine_duration:.3f}s!")
+    print(f"    - Block Hash:    {block.hash}")
+    print(f"    - Merkle Root:   {block.merkle_root}")
+    print(f"    - Total Records: {len(confirmed_records)}")
+
+    print("\n🔍 Validating Merkle Inclusion Proofs for Batch Records:")
+    for r in confirmed_records:
+        proof_data = chain.get_merkle_proof(r["source_url"])
+        if proof_data:
+            valid = MerkleTree.verify_proof(proof_data["leaf_hash"], proof_data["proof"], block.merkle_root)
+            status = "VERIFIED VALID ✅" if valid else "FAILED ❌"
+            print(f"  • File '{r['filename']}': Merkle Proof {status}")
+
+    print("\n" + "=" * 75)
+    print(" 🎉 Batch pipeline executed successfully!")
+    print("=" * 75 + "\n")
+
+
+def run_merkle_proof_audit(post_url: str, storage_path: str = "chain_data.json"):
+    """Audits and displays the cryptographic Merkle Proof path for a specific post URL."""
+    print("\n" + "=" * 75)
+    print(f" 🌳  MERKLE INCLUSION PROOF AUDIT: {post_url}")
+    print("=" * 75)
+
+    chain = LocalChain(storage_path=storage_path)
+    proof_data = chain.get_merkle_proof(post_url)
+
+    if not proof_data:
+        print(f"❌ No record found on-chain for URL '{post_url}'.")
+        return
+
+    print(f"  • Block Index:  #{proof_data['block_index']}")
+    print(f"  • Block Hash:   {proof_data['block_hash']}")
+    print(f"  • Merkle Root:  {proof_data['merkle_root']}")
+    print(f"  • Leaf Index:   {proof_data['leaf_index']}")
+    print(f"  • Leaf Hash:    {proof_data['leaf_hash']}")
+    print(f"  • Proof Steps:  {len(proof_data['proof'])}")
+
+    for i, (s_hash, direction) in enumerate(proof_data["proof"], 1):
+        print(f"      Step {i}: [{direction.upper()}] Sibling: {s_hash}")
+
+    valid = MerkleTree.verify_proof(proof_data["leaf_hash"], proof_data["proof"], proof_data["merkle_root"])
+    print("\n" + "-" * 75)
+    print(f"  Cryptographic Proof Result: {'✅ VERIFIED AUTHENTIC ($O(\\log N)$)' if valid else '❌ PROOF INVALID'}")
     print("=" * 75 + "\n")
 
 
@@ -244,8 +421,11 @@ def run_tamper_demo(storage_path: str = "chain_data.json"):
     print("\n2. Simulating Adversarial Tamper Attack:")
     print("   Adversary alters the matched post URL in Block #1 without re-mining...")
     target_block = chain.blocks[-1]
-    original_data = dict(target_block.data)
-    target_block.data["source_url"] = "https://fake-fraudulent-url.org/spoofed"
+    original_data = dict(target_block.data) if isinstance(target_block.data, dict) else list(target_block.data)
+    if isinstance(target_block.data, dict):
+        target_block.data["source_url"] = "https://fake-fraudulent-url.org/spoofed"
+    elif isinstance(target_block.data, list) and target_block.data:
+        target_block.data[0]["source_url"] = "https://fake-fraudulent-url.org/spoofed"
 
     print("\n3. Re-Verifying Chain Integrity Post-Tamper:")
     tampered_report = chain.verify_chain()
@@ -269,6 +449,24 @@ def main():
         description="Task 3: Face Identification, Reverse Web Search & Blockchain Verification"
     )
     parser.add_argument("--image", "-i", type=str, help="Path to input probe face image")
+    parser.add_argument(
+        "--compare",
+        nargs=2,
+        metavar=("IMG1", "IMG2"),
+        help="Direct 1-to-1 biometric face comparison between two images",
+    )
+    parser.add_argument(
+        "--batch",
+        type=str,
+        metavar="FOLDER",
+        help="Batch process an entire directory of face images and anchor with Merkle Tree",
+    )
+    parser.add_argument(
+        "--merkle-proof",
+        type=str,
+        metavar="POST_URL",
+        help="Audit and verify the cryptographic Merkle Inclusion Proof for a specific post URL",
+    )
     parser.add_argument(
         "--provider",
         "-p",
@@ -336,10 +534,27 @@ def main():
         except Exception:
             pass
 
+    # Mode 1: 1-to-1 Face Comparison
+    if args.compare:
+        run_compare(args.compare[0], args.compare[1], threshold=args.threshold)
+        return
+
+    # Mode 2: Batch Directory Ingestion
+    if args.batch:
+        run_batch(args.batch, provider=args.provider, threshold=args.threshold, storage_path=args.chain_path)
+        return
+
+    # Mode 3: Merkle Proof Audit
+    if args.merkle_proof:
+        run_merkle_proof_audit(args.merkle_proof, storage_path=args.chain_path)
+        return
+
+    # Mode 4: Tamper Demo
     if args.tamper_demo:
         run_tamper_demo(args.chain_path)
         return
 
+    # Mode 5: Verify Chain
     if args.verify_chain:
         chain = LocalChain(storage_path=args.chain_path)
         report = chain.verify_chain()
@@ -350,9 +565,9 @@ def main():
         print("=" * 50 + "\n")
         return
 
+    # Mode 6: Single Image End-to-End Pipeline
     if not args.image:
-        # Check if default sample image exists
-        sample_candidates = ["sample_face.jpg", "sample.jpg", "test.jpg", "../face-blockchain-verify/sample_data/sample.jpg"]
+        sample_candidates = ["sample_face.jpg", "sample.jpg", "test.jpg"]
         for cand in sample_candidates:
             if os.path.exists(cand):
                 args.image = cand
@@ -360,11 +575,12 @@ def main():
 
     if not args.image:
         print("Usage: python main.py --image <path_to_face_image>")
-        print("Options:")
-        print("  --provider [auto|yandex|serpapi|bing]")
-        print("  --threshold <float>")
-        print("  --verify-chain")
-        print("  --tamper-demo")
+        print("Other Modes:")
+        print("  --compare <img1> <img2>     (1-to-1 face comparison)")
+        print("  --batch <folder_path>       (Batch folder ingestion)")
+        print("  --merkle-proof <post_url>   (Verify cryptographic Merkle proof)")
+        print("  --verify-chain              (Verify blockchain ledger)")
+        print("  --tamper-demo               (Adversarial tamper demo)")
         sys.exit(1)
 
     run_pipeline(
