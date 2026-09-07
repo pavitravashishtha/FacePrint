@@ -224,7 +224,8 @@ def run_pipeline(
     proof_data = chain.get_merkle_proof(confirmed_match["source_url"])
     if proof_data:
         proof_valid = MerkleTree.verify_proof(proof_data["leaf_hash"], proof_data["proof"], new_block.merkle_root)
-        print(f"  ✅ Merkle Inclusion Proof: {'VERIFIED VALID ($O(\\log N)$ path verified) 🌳' if proof_valid else 'FAILED ❌'}")
+        proof_status = 'VERIFIED VALID ($O(\\log N)$ path verified) 🌳' if proof_valid else 'FAILED ❌'
+        print(f"  ✅ Merkle Inclusion Proof: {proof_status}")
 
     print("\n" + "=" * 75)
     print(" 🎉 Pipeline executed successfully end-to-end!")
@@ -394,7 +395,8 @@ def run_merkle_proof_audit(post_url: str, storage_path: str = "chain_data.json")
 
     valid = MerkleTree.verify_proof(proof_data["leaf_hash"], proof_data["proof"], proof_data["merkle_root"])
     print("\n" + "-" * 75)
-    print(f"  Cryptographic Proof Result: {'✅ VERIFIED AUTHENTIC ($O(\\log N)$)' if valid else '❌ PROOF INVALID'}")
+    proof_result = '✅ VERIFIED AUTHENTIC ($O(\\log N)$)' if valid else '❌ PROOF INVALID'
+    print(f"  Cryptographic Proof Result: {proof_result}")
     print("=" * 75 + "\n")
 
 
